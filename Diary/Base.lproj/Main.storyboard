@@ -93,7 +93,7 @@
         <!--일기 작성-->
         <scene sceneID="JV1-Zm-v8j">
             <objects>
-                <viewController id="pg0-uu-Kca" customClass="WriteDiaryViewController" customModule="Diary" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="WriteDiaryViewController" id="pg0-uu-Kca" customClass="WriteDiaryViewController" customModule="Diary" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="TcH-h8-wcn">
                         <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -267,7 +267,7 @@
         <!--Diary Detail View Controller-->
         <scene sceneID="hBS-c2-Zdf">
             <objects>
-                <viewController id="0rJ-5y-GBa" customClass="DiaryDetailViewController" customModule="Diary" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="DiaryDetailViewController" id="0rJ-5y-GBa" customClass="DiaryDetailViewController" customModule="Diary" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="cps-X9-3u9">
                         <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -329,6 +329,9 @@
                                         <rect key="frame" x="0.0" y="0.0" width="48.333333333333336" height="31"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" title="수정"/>
+                                        <connections>
+                                            <action selector="tapEditButton:" destination="0rJ-5y-GBa" eventType="touchUpInside" id="oAs-t8-rqk"/>
+                                        </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1bG-2G-EBF">
                                         <rect key="frame" x="98.333333333333329" y="0.0" width="48.333333333333329" height="31"/>
@@ -336,6 +339,9 @@
                                         <buttonConfiguration key="configuration" style="plain" title="삭제">
                                             <color key="baseForegroundColor" systemColor="systemRedColor"/>
                                         </buttonConfiguration>
+                                        <connections>
+                                            <action selector="tabDeleteButton:" destination="0rJ-5y-GBa" eventType="touchUpInside" id="8kE-ov-uaX"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                             </stackView>
@@ -359,6 +365,11 @@
                             <constraint firstItem="9ck-9G-ths" firstAttribute="trailing" secondItem="8Hi-XA-H8Q" secondAttribute="trailing" constant="24" id="y9t-3k-xb1"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="contentsTextView" destination="Nqs-V2-b8Z" id="nR5-b6-GJt"/>
+                        <outlet property="dateLabel" destination="vnk-ep-uga" id="ohJ-4i-jnH"/>
+                        <outlet property="titleLabel" destination="bsz-8E-S9a" id="s83-ll-Gt2"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rY6-G9-7EW" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
