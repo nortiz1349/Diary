@@ -9,6 +9,7 @@ import UIKit
 
 class ViewController: UIViewController {
 	
+	// MARK: - 프로퍼티
 	@IBOutlet weak var collectionView: UICollectionView!
 	
 	private var diaryList = [Diary]() {
@@ -17,7 +18,7 @@ class ViewController: UIViewController {
 		}
 	}
 	
-	// MARK: -
+	// MARK: - 뷰 로드 메서드
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		self.configureCollectionView()
@@ -27,23 +28,16 @@ class ViewController: UIViewController {
 			selector: #selector(editDiaryNotification(_:)),
 			name: NSNotification.Name("editDiary"),
 			object: nil)
-	}
-	
-	@objc func editDiaryNotification(_ notification: Notification) {
-		guard let diary = notification.object as? Diary else { return }
-		guard let row = notification.userInfo?["indexPath.row"] as? Int else { return }
-		self.diaryList[row] = diary
-		self.diaryList = self.diaryList.sorted(by: {
-			$0.date.compare($1.date) == .orderedDescending
-		})
-		self.collectionView.reloadData()
-	}
-	
-	private func configureCollectionView() {
-		self.collectionView.collectionViewLayout = UICollectionViewFlowLayout()
-		self.collectionView.contentInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
-		self.collectionView.delegate = self
-		self.collectionView.dataSource = self
+		NotificationCenter.default.addObserver(
+			self,
+			selector: #selector(starDiaryNotification(_:)),
+			name: NSNotification.Name("starDiary"),
+			object: nil)
+		NotificationCenter.default.addObserver(
+			self,
+			selector: #selector(deleteDiaryNotification(_:)),
+			name: NSNotification.Name("deleteDiary"),
+			object: nil)
 	}
 	
 	override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -52,7 +46,15 @@ class ViewController: UIViewController {
 		}
 	}
 	
+	// MARK: - 뷰 설정 메서드
+	private func configureCollectionView() {
+		self.collectionView.collectionViewLayout = UICollectionViewFlowLayout()
+		self.collectionView.contentInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+		self.collectionView.delegate = self
+		self.collectionView.dataSource = self
+	}
 	
+	// MARK: - Diary 저장, 로드 메서드
 	private func saveDiaryList() {
 		let data = self.diaryList.map {
 			[
@@ -81,6 +83,31 @@ class ViewController: UIViewController {
 		})
 	}
 	
+	// MARK: - Notification 관련 메서드
+	@objc func editDiaryNotification(_ notification: Notification) {
+		guard let diary = notification.object as? Diary else { return }
+		guard let row = notification.userInfo?["indexPath.row"] as? Int else { return }
+		self.diaryList[row] = diary
+		self.diaryList = self.diaryList.sorted(by: {
+			$0.date.compare($1.date) == .orderedDescending
+		})
+		self.collectionView.reloadData()
+	}
+	
+	@objc func starDiaryNotification(_ notification: Notification) {
+		guard let starDiary = notification.object as? [String: Any] else { return }
+		guard let isStar = starDiary["isStar"] as? Bool else { return }
+		guard let indexPath = starDiary["indexPath"] as? IndexPath else { return }
+		self.diaryList[indexPath.row].isStar = isStar
+	}
+	
+	@objc func deleteDiaryNotification(_ notification: Notification) {
+		guard let indexPath = notification.object as? IndexPath else { return }
+		self.diaryList.remove(at: indexPath.row)
+		self.collectionView.deleteItems(at: [indexPath])
+	}
+	
+	// MARK: - 기타 메서드
 	private func dateToString(date: Date) -> String {
 		let formatter  = DateFormatter()
 		formatter.dateFormat = "yy년 MM월 dd일(EEEEE)"
@@ -89,7 +116,7 @@ class ViewController: UIViewController {
 	}
 }
 
-// MARK: -
+// MARK: - 익스텐션
 extension ViewController: UICollectionViewDataSource {
 	func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
 		return self.diaryList.count
@@ -118,7 +145,7 @@ extension ViewController: UICollectionViewDelegate {
 		let diary = self.diaryList[indexPath.row]
 		viewController.diary = diary
 		viewController.indexPath = indexPath
-		viewController.delegate = self
+//		viewController.delegate = self
 		self.navigationController?.pushViewController(viewController, animated: true)
 	}
 }
@@ -130,12 +157,5 @@ extension ViewController: WriteDiaryViewDelegate {
 			$0.date.compare($1.date) == .orderedDescending
 		})
 		self.collectionView.reloadData()
-	}
-}
-
-extension ViewController: DiaryDetailViewDelegate {
-	func didSelectDelete(indexPath: IndexPath) {
-		self.diaryList.remove(at: indexPath.row)
-		self.collectionView.deleteItems(at: [indexPath])
 	}
 }

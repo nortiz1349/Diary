@@ -245,6 +245,10 @@
                                             </constraints>
                                         </collectionViewCellContentView>
                                         <size key="customSize" width="390" height="80"/>
+                                        <connections>
+                                            <outlet property="dateLabel" destination="lb5-q5-0RL" id="rG1-e1-7xV"/>
+                                            <outlet property="titleLabel" destination="5c0-2Q-ox0" id="u6g-UN-Pdr"/>
+                                        </connections>
                                     </collectionViewCell>
                                 </cells>
                             </collectionView>
@@ -259,6 +263,9 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="IZY-6i-YmM"/>
+                    <connections>
+                        <outlet property="collectionView" destination="hT0-Ir-z1S" id="Zl4-1e-MpO"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="W3Z-KA-MGw" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -297,7 +304,6 @@
                             </label>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="Nqs-V2-b8Z">
                                 <rect key="frame" x="20" y="177" width="350" height="150"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="150" id="1vP-7Q-f9a"/>
                                 </constraints>
@@ -340,7 +346,7 @@
                                             <color key="baseForegroundColor" systemColor="systemRedColor"/>
                                         </buttonConfiguration>
                                         <connections>
-                                            <action selector="tabDeleteButton:" destination="0rJ-5y-GBa" eventType="touchUpInside" id="8kE-ov-uaX"/>
+                                            <action selector="tapDeleteButton:" destination="0rJ-5y-GBa" eventType="touchUpInside" id="CgY-xI-Aho"/>
                                         </connections>
                                     </button>
                                 </subviews>

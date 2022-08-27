@@ -28,6 +28,7 @@ class WriteDiaryViewController: UIViewController {
 	weak var delegate: WriteDiaryViewDelegate?
 	var diaryEditorMode: DiaryEditorMode = .new
 	
+	// MARK: - 뷰 로드
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		self.configureContentsTextView()
@@ -35,6 +36,35 @@ class WriteDiaryViewController: UIViewController {
 		self.configureInputField()
 		self.configureEditMode()
 		self.confirmButton.isEnabled = false
+	}
+	
+	// MARK: - 뷰 설정
+	// 텍스트 뷰 테두리 설정
+	private func configureContentsTextView() {
+		let borderColor = UIColor(red: 220/255, green: 220/255, blue: 220/255, alpha: 1.0) // rgb 값에 0 ~ 1.0 사이의 값이 들어가야 되므로 나눗셈으로 표현
+		self.contentsTextView.layer.borderColor = borderColor.cgColor // borderColor 는 UIColor 가 아닌 cgColor 로 설정해야 한다.
+		self.contentsTextView.layer.borderWidth = 0.5
+		self.contentsTextView.layer.cornerRadius = 5.0
+	}
+	
+	// 등록버튼 활성화 상태를 설정
+	private func configureInputField() {
+		self.contentsTextView.delegate = self // extension 으로 delegate 채택
+		self.titleTextField.addTarget(self, action: #selector(titleTextFieldDidChange(_:)), for: .editingChanged)
+		self.dateTextField.addTarget(self, action: #selector(dateTextFieldDidChange(_:)), for: .editingChanged)
+	}
+	
+	@objc private func titleTextFieldDidChange(_ textField: UITextField) {
+		self.validateInputField()
+	}
+	
+	@objc private func dateTextFieldDidChange(_ textField: UITextField) {
+		self.validateInputField()
+	}
+	
+	// 등록 버튼의 활성화 여부를 판단하는 메서드
+	private func validateInputField() {
+		self.confirmButton.isEnabled = !(self.titleTextField.text?.isEmpty ?? true) && !(self.dateTextField.text?.isEmpty ?? true) && !self.contentsTextView.text.isEmpty
 	}
 	
 	private func configureEditMode() {
@@ -50,31 +80,12 @@ class WriteDiaryViewController: UIViewController {
 		}
 	}
 	
-	private func dateToString(date: Date) -> String {
-		let formatter  = DateFormatter()
-		formatter.dateFormat = "yy년 MM월 dd일(EEEEE)"
-		formatter.locale = Locale(identifier: "ko-KR")
-		return formatter.string(from: date)
-	}
-	
-	private func configureContentsTextView() {
-		let borderColor = UIColor(red: 220/255, green: 220/255, blue: 220/255, alpha: 1.0) // rgb 값에 0 ~ 1.0 사이의 값이 들어가야 되므로 나눗셈으로 표현
-		self.contentsTextView.layer.borderColor = borderColor.cgColor // borderColor 는 UIColor 가 아닌 cgColor 로 설정해야 한다.
-		self.contentsTextView.layer.borderWidth = 0.5
-		self.contentsTextView.layer.cornerRadius = 5.0
-	}
-	
-	private func configureDatePicker() {
+	// MARK: - DatePicker 메서드
+	private func configureDatePicker() { // DatePicker 설정
 		self.datePicker.datePickerMode = .date // 날짜만 나오게 설정
 		self.datePicker.preferredDatePickerStyle = .wheels
 		self.datePicker.addTarget(self, action: #selector(datePickerValueDidChange(_:)), for: .valueChanged)
 		self.dateTextField.inputView = self.datePicker // 텍스트필드 선택 시 키보드가 아닌 데이트픽커가 표시됨
-	}
-	
-	private func configureInputField() {
-		self.contentsTextView.delegate = self
-		self.titleTextField.addTarget(self, action: #selector(titleTextFieldDidChange(_:)), for: .editingChanged)
-		self.dateTextField.addTarget(self, action: #selector(dateTextFieldDidChange(_:)), for: .editingChanged)
 	}
 	
 	@objc private func datePickerValueDidChange(_ datePicker: UIDatePicker ) {
@@ -86,28 +97,33 @@ class WriteDiaryViewController: UIViewController {
 		self.dateTextField.sendActions(for: .editingChanged)
 	}
 	
-	@objc private func titleTextFieldDidChange(_ textField: UITextField) {
-		self.validateInputField()
+	// MARK: - 기타 메서드
+	// Date 타입 문자열로 변환
+	private func dateToString(date: Date) -> String {
+		let formatter  = DateFormatter()
+		formatter.dateFormat = "yy년 MM월 dd일(EEEEE)"
+		formatter.locale = Locale(identifier: "ko-KR")
+		return formatter.string(from: date)
 	}
 	
-	@objc private func dateTextFieldDidChange(_ textField: UITextField) {
-		self.validateInputField()
-	}
-	
+	// 데이트픽커, 키보드 숨기기
 	override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
 		self.view.endEditing(true)
 	}
 	
+	// MARK: - 버튼 액션 메서드
 	@IBAction func tabConfirmButton(_ sender: UIBarButtonItem) {
 		guard let title = self.titleTextField.text else { return }
 		guard let contents = self.contentsTextView.text else { return }
 		guard let date = self.diaryDate else { return }
-		let diary = Diary(title: title, contents: contents, date: date, isStar: false)
 		
 		switch self.diaryEditorMode {
 		case .new:
+			let diary = Diary(title: title, contents: contents, date: date, isStar: false)
 			self.delegate?.didSelectRegister(diary: diary)
-		case let .edit(indexPath, _):
+			
+		case let .edit(indexPath, diary):
+			let diary = Diary(title: title, contents: contents, date: date, isStar: diary.isStar)
 			NotificationCenter.default.post(
 				name: NSNotification.Name("editDiary"),
 				object: diary,
@@ -117,14 +133,13 @@ class WriteDiaryViewController: UIViewController {
 		}
 		self.navigationController?.popViewController(animated: true)
 	}
-	
-	private func validateInputField() { // 등록 버튼의 활성화 여부를 판단하는 메서드
-		self.confirmButton.isEnabled = !(self.titleTextField.text?.isEmpty ?? true) && !(self.dateTextField.text?.isEmpty ?? true) && !self.contentsTextView.text.isEmpty
-	}
 }
 
+// MARK: - 익스텐션
 extension WriteDiaryViewController: UITextViewDelegate {
-	func textViewDidChange(_ textView: UITextView) { // 텍스트뷰에 텍스트가 입력 될 때마다 호출되는 메서드
-		self.validateInputField() // 제목, 내용, 날짜 텍스트 필드에 값이 입력될때마다 이 메서드가 호출되어 등록버튼의 활성화 여부를 판단한다.
+	
+	// 텍스트뷰에 텍스트가 입력 될 때마다 호출되는 메서드를 구현
+	func textViewDidChange(_ textView: UITextView) {
+		self.validateInputField()
 	}
 }
