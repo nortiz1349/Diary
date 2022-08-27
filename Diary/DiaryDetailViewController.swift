@@ -20,6 +20,12 @@ class DiaryDetailViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		self.configureView()
+		NotificationCenter.default.addObserver(
+			self,
+			selector: #selector(starDiaryNotification(_:)),
+			name: NSNotification.Name("starDiary"),
+			object: nil
+		)
 	}
 	// MARK: - 뷰 설정 메서드
 	private func configureView() {
@@ -36,9 +42,8 @@ class DiaryDetailViewController: UIViewController {
 	// MARK: - 버튼 액션 메서드
 	@IBAction func tapEditButton(_ sender: UIButton) {
 		guard let viewController = self.storyboard?.instantiateViewController(withIdentifier: "WriteDiaryViewController") as? WriteDiaryViewController else { return }
-		guard let indexPath = self.indexPath else { return }
 		guard let diary = self.diary else { return }
-		viewController.diaryEditorMode = .edit(indexPath, diary)
+		viewController.diaryEditorMode = .edit(diary)
 		NotificationCenter.default.addObserver(
 			self,
 			selector: #selector(editDiaryNotification(_:)),
@@ -48,18 +53,28 @@ class DiaryDetailViewController: UIViewController {
 	}
 	
 	@IBAction func tapDeleteButton(_ sender: UIButton) {
-		guard let indexPath = self.indexPath else { return }
+		guard let uuidString = self.diary?.uuidString else { return }
 		NotificationCenter.default.post(
 			name: NSNotification.Name("deleteDiary"),
-			object: indexPath,
+			object: uuidString,
 			userInfo: nil
 		)
 		self.navigationController?.popViewController(animated: true)
 	}
 	
+	@objc func starDiaryNotification(_ notification: Notification) {
+		guard let starDiary = notification.object as? [String: Any] else { return }
+		guard let isStar = starDiary["isStar"] as? Bool else { return }
+		guard let uuidString = starDiary["uuidString"] as? String else { return }
+		guard let diary = self.diary else { return }
+		if diary.uuidString == uuidString {
+			self.diary?.isStar = isStar
+			self.configureView()
+		}
+	}
+	
 	@objc func tapStarButton() {
 		guard let isStar = self.diary?.isStar else { return }
-		guard let indexPath = self.indexPath else { return }
 		if isStar {
 			self.starButton?.image = UIImage(systemName: "star")
 		} else {
@@ -71,7 +86,7 @@ class DiaryDetailViewController: UIViewController {
 			object: [
 				"diary": self.diary,
 				"isStar": self.diary?.isStar ?? false,
-				"indexPath": indexPath
+				"uuidString": diary?.uuidString
 			],
 			userInfo: nil
 		)

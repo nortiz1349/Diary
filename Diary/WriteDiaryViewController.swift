@@ -9,7 +9,7 @@ import UIKit
 
 enum DiaryEditorMode {
 	case new
-	case edit(IndexPath, Diary)
+	case edit(Diary)
 }
 
 protocol WriteDiaryViewDelegate: AnyObject {
@@ -35,6 +35,7 @@ class WriteDiaryViewController: UIViewController {
 		self.configureDatePicker()
 		self.configureInputField()
 		self.configureEditMode()
+	
 		self.confirmButton.isEnabled = false
 	}
 	
@@ -69,15 +70,24 @@ class WriteDiaryViewController: UIViewController {
 	
 	private func configureEditMode() {
 		switch self.diaryEditorMode {
-		case let .edit(_, diary):
+		case let .edit(diary):
 			self.titleTextField.text = diary.title
 			self.contentsTextView.text = diary.contents
 			self.dateTextField.text = self.dateToString(date: diary.date)
 			self.diaryDate = diary.date
 			self.confirmButton.title = "수정"
 		default:
-			break
+			self.setDateToday()
 		}
+	}
+	
+	private func setDateToday() {
+		let todayDate: Date = Date()
+		let formater = DateFormatter()
+		formater.dateFormat = "yyyy년 MM월 dd일(EEEEE)"
+		formater.locale = Locale(identifier: "ko_KR")
+		self.diaryDate = todayDate
+		self.dateTextField.text = formater.string(from: todayDate)
 	}
 	
 	// MARK: - DatePicker 메서드
@@ -119,17 +129,28 @@ class WriteDiaryViewController: UIViewController {
 		
 		switch self.diaryEditorMode {
 		case .new:
-			let diary = Diary(title: title, contents: contents, date: date, isStar: false)
+			let diary = Diary(
+				uuidString: UUID().uuidString,
+				title: title,
+				contents: contents,
+				date: date,
+				isStar: false
+			)
 			self.delegate?.didSelectRegister(diary: diary)
 			
-		case let .edit(indexPath, diary):
-			let diary = Diary(title: title, contents: contents, date: date, isStar: diary.isStar)
+		case let .edit(diary):
+			let diary = Diary(
+				uuidString: diary.uuidString,
+				title: title,
+				contents: contents,
+				date: date,
+				isStar: diary.isStar
+			)
 			NotificationCenter.default.post(
 				name: NSNotification.Name("editDiary"),
 				object: diary,
-				userInfo: [
-					"indexPath.row": indexPath.row
-				])
+				userInfo: nil
+			)
 		}
 		self.navigationController?.popViewController(animated: true)
 	}
